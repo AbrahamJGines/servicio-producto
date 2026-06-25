@@ -18,25 +18,33 @@ public class ProductController {
 
     @GetMapping
     public Flux<Product> getAll() {
-        return productService.getAllProducts();
+        return productService.getAllProducts()
+                .onErrorResume(e -> Flux.error(new RuntimeException("No Existen productos: " + e.getMessage())));
     }
 
     @GetMapping("/{id}")
     public Mono<ResponseEntity<Product>> getById(@PathVariable Long id) {
         return productService.getProductById(id)
-                .map(ResponseEntity::ok);
+                .map(ResponseEntity::ok)
+                .onErrorResume(e -> Mono.error(new RuntimeException("Error al obtener el producto: " + e.getMessage())));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<Product> create(@RequestBody Product product) {
-        return productService.createProduct(product);
+    public Mono<ResponseEntity<Product>> create(@RequestBody Product product) {
+        return productService.createProduct(product)
+                .doOnSuccess(response -> System.out.println("Orden creada Correctamente con id: " + response.getId()))
+                .map(ResponseEntity::ok)
+                .onErrorResume(e -> Mono.error(new RuntimeException("Error al crear el producto: " + e.getMessage())));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public Mono<Void> delete(@PathVariable Long id) {
-        return productService.deleteProduct(id);
+    public Mono<ResponseEntity<Void>> delete(@PathVariable Long id) {
+        return productService.deleteProduct(id)
+                .doOnSuccess(response -> System.out.println("Producto eliminado con ID: " + id ))
+                .map(ResponseEntity::ok)
+                .onErrorResume(e -> Mono.error(new RuntimeException("Error al eliminar el producto: " + e.getMessage())));
     }
 
 }
