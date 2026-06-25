@@ -1,0 +1,12 @@
+#services: {}
+version: '3.8'
+
+services:
+  product-service:
+    build: .
+    container_name: reactive-product-service
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    restart: unless-stopped
